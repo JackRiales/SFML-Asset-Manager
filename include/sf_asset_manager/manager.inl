@@ -18,14 +18,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 #include "manager.h"
-using namespace asset;
+using namespace sf::asset;
 
 // =====
 
 template <typename KEY, typename T>
 Manager<KEY,T>::Manager()
 {
-
+    // Nothing
 }
 
 // =====
@@ -33,7 +33,7 @@ Manager<KEY,T>::Manager()
 template <typename KEY, typename T>
 Manager<KEY,T>::Manager( std::map<KEY,T> reloaded_bin )
 {
-    _bin = reloaded_bin;
+    _rc.bin = reloaded_bin;
 }
 
 // =====
@@ -91,7 +91,7 @@ bool Manager<KEY,T>::remove(KEY key)
         #endif
         return false;
     } else {
-        _bin.erase(key);
+        _rc.bin.erase(key);
     }
 }
 
@@ -109,7 +109,7 @@ bool Manager<KEY,T>::set(KEY key, T item)
         #endif
         return false;
     } else {
-        _bin[key] = item;
+        _rc.bin[key] = item;
         return true;
     }
 }
@@ -117,10 +117,10 @@ bool Manager<KEY,T>::set(KEY key, T item)
 // =====
 
 template <typename KEY, typename T>
-const T& Manager<KEY,T>::get(KEY key) const
+const T& Manager<KEY,T>::get(KEY key)
 {
     if (key_exists(key)) {
-        return _bin[key];
+        return _rc.bin[key];
     } else {
         #ifdef _DEBUG_
         printf("Get failed. Key does not exist.\n");
@@ -132,29 +132,21 @@ const T& Manager<KEY,T>::get(KEY key) const
 // =====
 
 template <typename KEY, typename T>
-const int& Manager<KEY,T>::item_count() const
-{
-    return _item_count;
-}
-
-// =====
-
-template <typename KEY, typename T>
 bool Manager<KEY,T>::key_exists(KEY key) const
 {
-    return (_bin.find(key) != _bin.end());
+    return (_rc.bin.find(key) != _rc.bin.end());
 }
 
 // ===== BEGIN FILE IO IMPLEMENTATIONS ===== //
 
 template <typename KEY, typename T>
-bool Manager<KEY,T>::write_binary (std::fstream& out)
+bool Manager<KEY,T>::write_binary (std::ofstream& out)
 {
     if (!out) {
         return false;
     } else {
-        boost::archive::binary_oarchive o_bin (out);
-        o_bin << _bin;
+        boost::archive::binary_oarchive ar(out);
+        ar << _rc;
         return true;
     }
 }
@@ -172,8 +164,8 @@ bool Manager<KEY,T>::read_binary (std::ifstream& in)
     if (!in) {
         return false;
     } else {
-        boost::archive::binary_iarchive i_bin (in);
-        _bin >> i_bin;
+        boost::archive::binary_iarchive ar(in);
+        ar >> _rc;
         return true;
     }
 }
@@ -183,32 +175,6 @@ bool Manager<KEY,T>::read_binary (std::string path)
 {
     std::ofstream in(path, std::ios::in | std::ios::binary);
     return write_binary(in);
-}
-
-template <typename KEY, typename T>
-bool Manager<KEY,T>::write_sequential_xml (std::ofstream& out, std::string root_node)
-{
-
-}
-
-template <typename KEY, typename T>
-bool Manager<KEY,T>::write_sequential_xml (std::string path, std::string root_node)
-{
-    std::ofstream out(path, std::ios::out);
-    return write_sequential_xml(out, root_node);
-}
-
-template <typename KEY, typename T>
-bool Manager<KEY,T>::read_sequential_xml (std::ifstream& in)
-{
-
-}
-
-template <typename KEY, typename T>
-bool Manager<KEY,T>::read_sequential_xml (std::string path)
-{
-    std::ofstream in(path, std::ios::in);
-    return read_sequential_xml(in);
 }
 
 // ===== END   FILE IO IMPLEMENTATIONS ===== //

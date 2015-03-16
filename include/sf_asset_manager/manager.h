@@ -21,21 +21,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #define SFML_ASSET_MANAGER_TEMPLATE
 
 // === Inclusion Macros === //
+#include <iostream>                                 // -- cout and cin debug
 #include <stdio.h>                                  // -- C Print
 #include <fstream>                                  // -- File stream
 #include <string>                                   // -- STL String
 #include <sstream>                                  // -- String Stream
 #include <map>                                      // -- STL Map
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/serialization.hpp>    // -- Boost Serialization Library
-#include <boost/serialization/map.hpp>              // -- Boost Map Serialization
-#include <boost/archive/binary_iarchive.hpp>        // -- Boost Binary I
-#include <boost/archive/binary_oarchive.hpp>        // -- Boost Binary O
-#include <boost/archive/text_iarchive.hpp>          // -- Boost Input Text Archive
-#include <boost/archive/text_oarchive.hpp>          // -- Boost Output Text Archive
+#include <boost/archive/binary_oarchive.hpp>        // -- Binary Write
+#include <boost/archive/binary_iarchive.hpp>        // -- Binary Read
+#include <boost/serialization/map.hpp>              // -- Serialization of STL Map
 // ======================== //
 
-namespace asset
+namespace sf::asset
 {
 
 template <typename KEY, typename T>
@@ -105,13 +102,7 @@ class Manager
             \return T item at key
             \return Null key did not exist
         */
-        const T& get( KEY key ) const;
-
-        /**
-            \name Count
-            \brief Returns the current number of held items
-        */
-        const int& item_count() const;
+        const T& get( KEY key );
 
         /**
             \name Key Check
@@ -127,31 +118,29 @@ class Manager
             \return True IO successful
             \return False IO unsuccessful; reasons specified in debug
         */
-        bool write_binary( std::fstream& out );
+        bool write_binary( std::ofstream& out );
         bool write_binary( std::string path );
         bool read_binary( std::ifstream& in );
         bool read_binary( std::string path );
-        bool write_sequential_xml( std::ofstream& out, std::string root_node );
-        bool write_sequential_xml( std::string path, std::string root_node );
-        bool read_sequential_xml( std::ifstream& in );
-        bool read_sequential_xml( std::string path );
         /** End File IO Function Headers */
-
-        friend class boost::serialization::access;
 
     protected:
         /// Asset bin keeps object data under keys
-        std::map<KEY,T> _bin;
+        class serializable_map {
+        public:
+            std::map<KEY,T> bin;
+        private:
+            friend class boost::serialization::access;
+
+            template<class Archive>
+            void serialize(Archive & ar, const unsigned int version)
+            {
+                ar & bin;
+            }
+        } _rc;
 
     private:
-        /// The amount of items currently being kept.
-        int _item_count;
 
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version)
-        {
-            ar & _bin;
-        }
 };
 
 }
