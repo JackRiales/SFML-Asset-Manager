@@ -32,8 +32,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <boost/serialization/map.hpp>              // -- Serialization of STL Map
 // ======================== //
 
-namespace sf::asset
-{
+namespace sf {
+namespace asset {
 
 template <typename KEY, typename T>
 class Manager
@@ -143,7 +143,8 @@ class Manager
 
 };
 
-}
+} // Asset
+} // sf
 
 // Implementation header
 #include "manager.inl"
